@@ -133,7 +133,7 @@ def inbound_handler():
             "Sorry, we didn't understand. Please try again and include a number.",
             is_system_msg=True)
     else:
-        message = count_vote(voter, vote)
+        message = count_vote(voter, int(vote))
         send_message(
             [voter], virtual_tn,
             message,
