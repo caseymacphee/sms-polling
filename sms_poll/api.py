@@ -92,7 +92,7 @@ def get_stats():
         except Exception as e:
             log.error({"exc": e})
 
-    results = sorted(results, key=lambda li: li[1])
+    results = sorted(results, key=lambda li: li[1], reverse=True)
     return Response(json.dumps(results), content_type="application/json")
 
 
