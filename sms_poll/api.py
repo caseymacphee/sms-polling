@@ -99,15 +99,16 @@ def get_stats():
 def count_vote(voter, vote):
     try:
         new_vote = Vote(voter, vote)
+        db_session.add(new_vote)
+        db_session.commit()
     except IntegrityError:
-        prev_vote = Vote.query.filter_by(value=voter).one()
+        db_session.rollback()
+        prev_vote = Vote.query.filter_by(number=voter).one()
         prev_vote.vote = vote
         db_session.add(prev_vote)
         db_session.commit()
         return "Thanks! Your vote has been changed to hack {}".format(vote)
     else:
-        db_session.add(new_vote)
-        db_session.commit()
         return "Thanks! Your vote (hack {}) has been recorded.".format(vote)
 
 
@@ -116,9 +117,7 @@ def inbound_handler():
     body = request.json
     try:
         virtual_tn = body['to']
-        if virtual_tn is not POLL_NUMBER:
-            return Response(status=200)
-        assert len() <= 18
+        assert len(virtual_tn) <= 18
         voter = body['from']
         assert len(voter) <= 18
         message = body['body']
@@ -126,8 +125,12 @@ def inbound_handler():
         msg = ("Malformed inbound message: {}".format(body))
         log.error({"message": msg, "status": "failed", "exc": str(e)})
         return Response('There was an issue parsing your request.', status=400)
+    if virtual_tn != POLL_NUMBER:
+        log.info({"poll_number": POLL_NUMBER, "ptype": type(POLL_NUMBER), "vtype": type(virtual_tn), "to": virtual_tn})
+        return Response(status=200)
     vote = ''.join([i for i in message if i.isdigit()])
     if len(vote) == 0:
+        log.info({"message": "No digit was present in the SMS, sending reply."})
         send_message(
             [voter], virtual_tn,
             "Sorry, we didn't understand. Please try again and include a number.",
@@ -138,7 +141,7 @@ def inbound_handler():
             [voter], virtual_tn,
             message,
             is_system_msg=True)
-    log.info({"message": msg, "status": "succeeded"})
+        log.info({"message": "vote counted, and sent reply", "status": "succeeded"})
     return Response(status=200)
 
 

@@ -8,7 +8,7 @@ if DEBUG_MODE:
     engine = create_engine('sqlite:////tmp/{}'.format(TEST_DB),
                            convert_unicode=True)
 else:
-    engine = create_engine('sqlite:///{}'.format(DB), convert_unicode=True)
+    engine = create_engine('sqlite:////var/lib/sqlite/data/{}'.format(DB), convert_unicode=True)
 
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,

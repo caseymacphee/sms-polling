@@ -16,5 +16,5 @@ class Vote(Base):
 
     def __init__(self, number, vote):
         self.id = uuid.uuid4().hex
-        self.value = number
+        self.number = number
         self.vote = vote
